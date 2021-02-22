@@ -15,11 +15,15 @@ class CreateCampaign extends Migration
     {
         Schema::create('campaign', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('user_id');
             $table->string('subject', 255);
             $table->text('message');
-            $table->string('email_sender');
-            $table->string('email_target');
             $table->timestamps();
+        });
+        Schema::table('campaign', function (Blueprint $table) {
+            $table->integer('user_id')->unsigned()->change();
+            $table->foreign('user_id')->references('id')->on('users')
+                ->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

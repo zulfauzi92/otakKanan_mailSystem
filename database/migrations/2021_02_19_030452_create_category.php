@@ -13,14 +13,14 @@ class CreateGroupSubscribe extends Migration
      */
     public function up()
     {
-        Schema::create('category', function (Blueprint $table) {
+        Schema::create('group', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id');
             $table->string('name')->unique();
             $table->timestamps();
         });
         
-        Schema::table('category', function (Blueprint $table) {
+        Schema::table('group', function (Blueprint $table) {
             $table->integer('user_id')->unsigned()->change();
             $table->foreign('user_id')->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('cascade');
@@ -34,6 +34,6 @@ class CreateGroupSubscribe extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('category');
+        Schema::dropIfExists('group');
     }
 }
