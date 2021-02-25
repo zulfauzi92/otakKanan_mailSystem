@@ -2,9 +2,30 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupSubscribersController;
 use App\Http\Controllers\SubscribersController;
+
+
+
+Route::group(['middleware' => 'jwt.verify'], function(){
+    Route::post('logout', [UserController::class, 'logout']);
+    Route::post('/editProfile', [UserController::class, 'update']);
+});
+
+Route::post('register', [UserController::class, 'register']);
+Route::post('login', [UserController::class, 'login']);
+
+Route::group(['prefix' => 'campaign',  'middleware' => ['jwt.verify']], function() {
+    Route::get('/show', [CampaignController::class, 'index']);
+    Route::get('/show/{id}', [CampaignController::class, 'show']);
+    Route::post('/create', [CampaignController::class, 'store']);
+    Route::put('/update/{id}', [CampaignController::class, 'update']);
+    Route::delete('/delete/{id}', [CampaignController::class, 'destroy']);
+});
 
 
 //Group Controller
@@ -30,3 +51,4 @@ Route::group(['prefix' => 'subscribers'], function() {
     Route::post('/update/{id}', [SubscribersController::class, 'update']);
     Route::delete('/delete/{id}', [SubscribersController::class, 'destroy']);
 });
+
