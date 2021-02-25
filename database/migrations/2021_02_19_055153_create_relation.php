@@ -13,9 +13,9 @@ class CreateRelation extends Migration
      */
     public function up()
     {
-        Schema::table('group_subscribe', function (Blueprint $table) {
-            $table->integer('category_id')->unsigned()->change();
-            $table->foreign('category_id')->references('id')->on('category')
+        Schema::table('group_subscribers', function (Blueprint $table) {
+            $table->integer('group_id')->unsigned()->change();
+            $table->foreign('group_id')->references('id')->on('group')
                 ->onUpdate('cascade')->onDelete('cascade');
                 
             $table->integer('subscribe_id')->unsigned()->change();
