@@ -40,15 +40,15 @@ class CampaignController extends Controller
         $this->validate($request,[
             'subject' => 'required',
             'message' => 'required',
-            'email_sender' => 'required',
-            'email_target' => 'required'
+            'track_click' => 'required',
+            'track_open' => 'required'
         ]);
 
         $campaign = Campaign::create([
             'subject' => $request->get('subject'),
             'message' => $request->get('message'),
-            'email_sender' => $request->get('email_sender'),
-            'email_target' => $request->get('email_target')
+            'track_click' => $request->get('track_click'),
+            'track_open' => $request->get('track_open')
         ]);
         
         return response()->json($campaign);
@@ -102,18 +102,6 @@ class CampaignController extends Controller
         if ($request->get('message') != null) {
             $campaign->update([
                 'message' => $request->get('message')
-            ]);
-        }
-
-        if ($request->get('email_sender') != null) {
-            $campaign->update([
-                'email_sender' => $request->get('email_sender')
-            ]);
-        }
-
-        if ($request->get('email_target') != null) {
-            $campaign->update([
-                'email_target' => $request->get('email_target')
             ]);
         }
 

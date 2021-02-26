@@ -18,8 +18,6 @@ class CreateCampaign extends Migration
             $table->integer('user_id');
             $table->string('subject', 255);
             $table->text('message');
-            $table->string('email_sender');
-            $table->string('email_target');
             $table->integer('track_click')->nullable();
             $table->integer('track_open')->nullable();
             $table->timestamps();
