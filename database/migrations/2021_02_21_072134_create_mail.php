@@ -18,6 +18,8 @@ class CreateMail extends Migration
             $table->integer('from_id');
             $table->integer('to_id');
             $table->integer('campaign_id');
+            $table->integer('track_click')->default(0);
+            $table->integer('track_open')->default(0);
             $table->timestamps();
         });
     }

@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Campaign;
+use App\Models\Mail;
+use App\Models\Subscribers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CampaignController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    
     public function index()
     {
         $campaigns = Campaign::all();
@@ -19,47 +18,51 @@ class CampaignController extends Controller
         return response()->json(compact('campaigns'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    
+   
     public function store(Request $request)
     {
+        $user = JWTAuth::parseToken()->authenticate();
+
         $this->validate($request,[
             'subject' => 'required',
             'message' => 'required',
-            'track_click' => 'required',
-            'track_open' => 'required'
+            'sender' => 'required|string|email|max:255'
         ]);
+
+        $subscriber = DB::table('subscribers')
+        ->where('email', 'like', $request->sender)
+        ->first();
+
+        if (empty($subscriber)) {
+
+            $sender = Subscribers::create([
+                'user_id' => $user->id,
+                'email' => $request->sender
+            ]);
+
+        } else { 
+
+            $sender = $subscriber;
+
+        }
 
         $campaign = Campaign::create([
             'subject' => $request->get('subject'),
             'message' => $request->get('message'),
-            'track_click' => $request->get('track_click'),
-            'track_open' => $request->get('track_open')
+            'user_id' => $user->id
+        ]);
+
+        $mail = Mail::create([
+            'from_id' => $user->id,
+            'to_id' => $sender->id,
+            'campaign_id' => $campaign->id
         ]);
         
-        return response()->json($campaign);
+        return response()->json(compact(['campaign', 'sender', 'mail']));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Campaign  $campaign
-     * @return \Illuminate\Http\Response
-     */
+    
     public function show($id)
     {
         $campaign = Campaign::find($id);
@@ -71,24 +74,7 @@ class CampaignController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Campaign  $campaign
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Campaign $campaign)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Campaign  $campaign
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $campaign = Campaign::find($id);
@@ -105,21 +91,16 @@ class CampaignController extends Controller
             ]);
         }
 
-        if ($request->get('track_click') != null) {
-            $campaign->update([
-                'track_click' => $request->get('track_click')
-            ]);
-        }
+        // if ($request->get('track_click') != null) {
+        //     $campaign->update([
+        //         'track_click' => $request->get('track_click')
+        //     ]);
+        // }
         
         return response()->json([ 'message' => "Data Successfully Updated"]);  
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Campaign  $campaign
-     * @return \Illuminate\Http\Response
-     */
+  
     public function destroy($id)
     {
         $campaign = Campaign::find($id);

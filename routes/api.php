@@ -8,10 +8,10 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupSubscribersController;
 use App\Http\Controllers\SubscribersController;
+use App\Http\Controllers\MailController;
 
 
-
-Route::group(['middleware' => 'jwt.verify'], function(){
+Route::group(['prefix' => 'user', 'middleware' => ['jwt.verify']], function(){
     Route::post('logout', [UserController::class, 'logout']);
     Route::post('/editProfile', [UserController::class, 'update']);
 });
@@ -29,7 +29,7 @@ Route::group(['prefix' => 'campaign',  'middleware' => ['jwt.verify']], function
 
 
 //Group Controller
-Route::group(['prefix' => 'group'], function() {
+Route::group(['prefix' => 'group', 'middleware' => ['jwt.verify']], function() {
     Route::get('/read', [GroupController::class, 'index']);
     Route::post('/create', [GroupController::class, 'store']);
     Route::post('/update/{id}', [GroupController::class, 'update']);
@@ -37,7 +37,7 @@ Route::group(['prefix' => 'group'], function() {
 });
 
 //GroupSubscribers Controller
-Route::group(['prefix' => 'group-subscribers'], function() {
+Route::group(['prefix' => 'group-subscribers', 'middleware' => ['jwt.verify']], function() {
     Route::get('/read', [GroupSubscribersController::class, 'index']);
     Route::post('/create', [GroupSubscribersController::class, 'store']);
     Route::post('/update/{id}', [GroupSubscribersController::class, 'update']);
@@ -45,10 +45,17 @@ Route::group(['prefix' => 'group-subscribers'], function() {
 });
 
 //Subscribers Controller
-Route::group(['prefix' => 'subscribers'], function() {
+Route::group(['prefix' => 'subscribers', 'middleware' => ['jwt.verify']], function() {
     Route::get('/read', [SubscribersController::class, 'index']);
     Route::post('/create', [SubscribersController::class, 'store']);
     Route::post('/update/{id}', [SubscribersController::class, 'update']);
     Route::delete('/delete/{id}', [SubscribersController::class, 'destroy']);
+});
+
+//Mail Controller
+Route::group(['prefix' => 'mymail', 'middleware' => ['jwt.verify'] ], function() {
+    Route::get('/', [MailController::class, 'index']);
+    Route::get('/{id}', [MailController::class, 'show']);
+    Route::delete('/delete/{id}', [MailController::class, 'destroy']);
 });
 
