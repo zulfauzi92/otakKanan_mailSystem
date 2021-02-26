@@ -13,8 +13,7 @@ class Campaign extends Model
     protected $fillable = [
         'subject',
         'message',
-        'track_click',
-        'track_open'
+        'user_id'
     ];
     public $timestamps = true;
 }

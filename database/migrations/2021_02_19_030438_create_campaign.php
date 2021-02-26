@@ -18,8 +18,6 @@ class CreateCampaign extends Migration
             $table->integer('user_id');
             $table->string('subject', 255);
             $table->text('message');
-            $table->integer('track_click')->nullable();
-            $table->integer('track_open')->nullable();
             $table->timestamps();
         });
         Schema::table('campaign', function (Blueprint $table) {
@@ -27,6 +25,7 @@ class CreateCampaign extends Migration
             $table->foreign('user_id')->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('cascade');
         });
+        
     }
 
     /**
