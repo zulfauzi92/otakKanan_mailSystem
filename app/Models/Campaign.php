@@ -12,9 +12,7 @@ class Campaign extends Model
     protected $table = 'campaign';
     protected $fillable = [
         'subject',
-        'message',
-        'email_sender',
-        'email_target'
+        'message'
     ];
     public $timestamps = true;
 }
