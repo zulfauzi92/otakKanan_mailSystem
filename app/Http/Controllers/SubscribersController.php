@@ -25,13 +25,14 @@ class SubscribersController extends Controller
     
     public function store(Request $request)
     {
+        $user = JWTAuth::parseToken()->authenticate();
+
         $this->validate($request,[
-            'user_id' => 'required',
             'email' => 'required|string|email|max:255|unique:subscribers'
         ]);
 
         $subscribers = Subscribers::create([
-            'user_id' => $request->get('user_id'),
+            'user_id' => $user->id,
             'email' => $request->get('email')
         ]);
         
@@ -66,11 +67,6 @@ class SubscribersController extends Controller
 
         } else {
 
-            if ($request->get('user_id') != null) {
-                $subscribers->update([
-                    'user_id' => $request->get('user_id')
-                ]);
-            }
 
             if ($request->get('email') != null) {
                 $subscribers->update([

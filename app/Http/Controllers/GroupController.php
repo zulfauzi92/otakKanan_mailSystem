@@ -24,13 +24,14 @@ class GroupController extends Controller
     
     public function store(Request $request)
     {
+        $user = JWTAuth::parseToken()->authenticate();
+
         $this->validate($request,[
-            'user_id' => 'required',
             'name' => 'required|string|max:255|unique:group'
         ]);
 
         $group = Group::create([
-            'user_id' => $request->get('user_id'),
+            'user_id' => $user->id,
             'name' => $request->get('name')
         ]);
         
@@ -65,11 +66,6 @@ class GroupController extends Controller
 
         } else {
 
-            if ($request->get('user_id') != null) {
-                $group->update([
-                    'user_id' => $request->get('user_id')
-                ]);
-            }
 
             if ($request->get('name') != null) {
                 $group->update([

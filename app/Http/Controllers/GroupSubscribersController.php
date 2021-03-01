@@ -24,14 +24,15 @@ class GroupSubscribersController extends Controller
     
     public function store(Request $request)
     {
+        $user = JWTAuth::parseToken()->authenticate();
+
         $this->validate($request,[
-            'user_id' => 'required',
             'group_id' => 'required',
             'subscribe_id' => 'required'
         ]);
 
         $groupSubscribers = GroupSubscribers::create([
-            'user_id' => $request->get('user_id'),
+            'user_id' => $user->id,
             'group_id' => $request->get('group_id'),
             'subscribe_id' => $request->get('subscribe_id')
         ]);
@@ -70,12 +71,6 @@ class GroupSubscribersController extends Controller
             return response()->json([ 'message' => "Data Not Found"]); 
 
         } else {
-
-            if ($request->get('user_id') != null) {
-                $groupSubscribers->update([
-                    'user_id' => $request->get('user_id')
-                ]);
-            }
 
             if ($request->get('group_id') != null) {
                 $groupSubscribers->update([
