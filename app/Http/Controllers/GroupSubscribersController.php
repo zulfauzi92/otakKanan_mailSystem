@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\GroupSubscribers;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
 
 class GroupSubscribersController extends Controller
 {
     public function index()
     {
-        $groupSubscribers = GroupSubscribers::all();
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $groupSubscribers = DB::table('group_subscribers')
+        ->where('user_id', 'like', $user->id)
+        ->get();
 
         return response()->json(compact('groupSubscribers'));
     }
@@ -35,7 +42,12 @@ class GroupSubscribersController extends Controller
    
     public function show($id)
     {
-        $groupSubscribers = GroupSubscribers::find($id);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $groupSubscribers = DB::table('group_subscribers')
+        ->where('user_id', 'like', $user->id)
+        ->where('id', 'like', $id)
+        ->get();
         
         if (empty($groupSubscribers)) {
 

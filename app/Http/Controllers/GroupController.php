@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Group;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
 
 class GroupController extends Controller
 {
     public function index()
     {
-        $group = Group::all();
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $group = DB::table('group')
+        ->where('user_id', 'like', $user->id)
+        ->get();
 
         return response()->json(compact('group'));
     }
@@ -33,7 +40,12 @@ class GroupController extends Controller
    
     public function show($id)
     {
-        $group = Group::find($id);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $group = DB::table('group')
+        ->where('user_id', 'like', $user->id)
+        ->where('id', 'like', $id)
+        ->get();
         
         if (empty($group)) {
             return response()->json([ 'message' => "Data Not Found"]); 

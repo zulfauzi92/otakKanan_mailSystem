@@ -74,7 +74,12 @@ class CampaignController extends Controller
     
     public function show($id)
     {
-        $campaign = Campaign::find($id);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $campaign = DB::table('campaign')
+        ->where('user_id', 'like', $user->id)
+        ->where('id', 'like', $id)
+        ->get();
         
         if (empty($campaign)) {
             return response()->json([ 'message' => "Data Not Found"]); 

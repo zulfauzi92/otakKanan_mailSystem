@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Subscribers;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
 
 class SubscribersController extends Controller
 {
     public function index()
     {
-        $subscribers = Subscribers::all();
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $subscribers = DB::table('subscribers')
+        ->where('user_id', 'like', $user->id)
+        ->get();
+
 
         return response()->json(compact('subscribers'));
     }
@@ -33,7 +41,12 @@ class SubscribersController extends Controller
    
     public function show($id)
     {
-        $subscribers = Subscribers::find($id);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $subscribers = DB::table('subscribers')
+        ->where('user_id', 'like', $user->id)
+        ->where('id', 'like', $id)
+        ->get();
         
         if (empty($subscribers)) {
             return response()->json([ 'message' => "Data Not Found"]); 
