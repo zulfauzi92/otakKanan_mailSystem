@@ -7,6 +7,8 @@ use App\Models\Mail;
 use App\Models\Campaign;
 use App\Models\Subscribers;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
 
 class MailController extends Controller
 {
@@ -15,6 +17,7 @@ class MailController extends Controller
 
         $user = JWTAuth::parseToken()->authenticate();
 
+        $response['messageSent'] = array();
         $mail = DB::table('mail')
         ->where('from_id', '=', $user->id)
         ->orderBy('created_at', 'desc')
@@ -26,21 +29,21 @@ class MailController extends Controller
 
         } else {
 
-            $response['messageSent'] = array();
+            
 
             foreach ($mail as $perItem) {
                 
                 $subscriber = Subscribers::find($perItem->to_id);
                 $campaign = Campaign::find($perItem->campaign_id);
 
-                $mail['mail_id'] = $perItem->id;
-                $mail['to'] = $subscriber->email;
-                $mail['subject'] = $campaign->subject;
-                $mail['message'] = $campaign->message;
-                $mail['created_at'] = $campaign->created_at;
-                $mail['status'] = 'mail not empty';
+                $email['mail_id'] = $perItem->id;
+                $email['to'] = $subscriber->email;
+                $email['subject'] = $campaign->subject;
+                $email['message'] = $campaign->message;
+                $email['created_at'] = $campaign->created_at;
+                $email['status'] = 'mail not empty';
 
-                array_push($response['messageSent'], $mail);
+                array_push($response['messageSent'], $email);
 
             }
 
