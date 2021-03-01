@@ -6,14 +6,23 @@ use App\Models\Campaign;
 use App\Models\Mail;
 use App\Models\Subscribers;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
+use Illuminate\Support\Facades\Validator;
 
 class CampaignController extends Controller
 {
     
     public function index()
     {
-        $campaigns = Campaign::all();
+        $user = JWTAuth::parseToken()->authenticate();
+        $campaigns = DB::table('campaign')
+        ->where('user_id', 'like', $user->id)
+        ->get();
 
         return response()->json(compact('campaigns'));
     }
@@ -27,23 +36,23 @@ class CampaignController extends Controller
         $this->validate($request,[
             'subject' => 'required',
             'message' => 'required',
-            'sender' => 'required|string|email|max:255'
+            'receiver' => 'required|string|email|max:255'
         ]);
 
         $subscriber = DB::table('subscribers')
-        ->where('email', 'like', $request->sender)
+        ->where('email', 'like', $request->receiver)
         ->first();
 
         if (empty($subscriber)) {
 
-            $sender = Subscribers::create([
+            $receiver = Subscribers::create([
                 'user_id' => $user->id,
-                'email' => $request->sender
+                'email' => $request->receiver
             ]);
 
         } else { 
 
-            $sender = $subscriber;
+            $receiver = $subscriber;
 
         }
 
@@ -55,11 +64,11 @@ class CampaignController extends Controller
 
         $mail = Mail::create([
             'from_id' => $user->id,
-            'to_id' => $sender->id,
+            'to_id' => $receiver->id,
             'campaign_id' => $campaign->id
         ]);
         
-        return response()->json(compact(['campaign', 'sender', 'mail']));
+        return response()->json(compact(['campaign', 'receiver', 'mail']));
     }
 
     
