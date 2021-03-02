@@ -47,7 +47,7 @@ class SubscribersController extends Controller
         $subscribers = DB::table('subscribers')
         ->where('user_id', 'like', $user->id)
         ->where('id', 'like', $id)
-        ->get();
+        ->first();
         
         if (empty($subscribers)) {
             return response()->json([ 'message' => "Data Not Found"]); 
