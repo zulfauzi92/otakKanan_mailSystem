@@ -30,10 +30,8 @@ class BasicMail extends Mailable
      */
     public function build()
     {
-        return $this->from('otakkanan@gmail.com', 'PT Otak Kanan')
-                    ->subject("PT Otak Kiri")
-                    ->trackCliks(true)
-                    ->trackOpens(true)
+        return $this->from($this->details['from'], $this->details['name'])
+                    ->subject($this->details['subject'])
                     ->view('emails.basicMail');
     }
 }
