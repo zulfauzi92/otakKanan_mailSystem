@@ -78,7 +78,14 @@ class CampaignController extends Controller
 
         ];
 
-        \Mail::to($request->get('receiver'))->send(new \App\Mail\BasicMail($details));
+        try{
+            \Mail::to($request->get('receiver'))->send(new \App\Mail\BasicMail($details));
+         }
+         catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+         }
+
+        
                
         return response()->json(compact(['campaign', 'receiver', 'mail']));
     }
