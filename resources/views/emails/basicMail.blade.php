@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>sosialajee.com</title>
+    <title>PT.OTAK KANAN</title>
 </head>
 <body>
     <h1>{{ $details['title'] }}</h1>

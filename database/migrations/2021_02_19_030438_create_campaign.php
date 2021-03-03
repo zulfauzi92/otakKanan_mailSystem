@@ -15,6 +15,7 @@ class CreateCampaign extends Migration
     {
         Schema::create('campaign', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('name');
             $table->integer('user_id');
             $table->string('subject', 255);
             $table->text('message');
