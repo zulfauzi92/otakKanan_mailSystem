@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Subscribers;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use JWTAuth;
 
 class SubscribersController extends Controller
 {
     public function index()
     {
-        $subscribers = Subscribers::all();
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $subscribers = DB::table('subscribers')
+        ->where('user_id', 'like', $user->id)
+        ->get();
+
 
         return response()->json(compact('subscribers'));
     }
@@ -17,13 +25,14 @@ class SubscribersController extends Controller
     
     public function store(Request $request)
     {
+        $user = JWTAuth::parseToken()->authenticate();
+
         $this->validate($request,[
-            'user_id' => 'required',
             'email' => 'required|string|email|max:255|unique:subscribers'
         ]);
 
         $subscribers = Subscribers::create([
-            'user_id' => $request->get('user_id'),
+            'user_id' => $user->id,
             'email' => $request->get('email')
         ]);
         
@@ -33,7 +42,12 @@ class SubscribersController extends Controller
    
     public function show($id)
     {
-        $subscribers = Subscribers::find($id);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $subscribers = DB::table('subscribers')
+        ->where('user_id', 'like', $user->id)
+        ->where('id', 'like', $id)
+        ->first();
         
         if (empty($subscribers)) {
             return response()->json([ 'message' => "Data Not Found"]); 
@@ -53,11 +67,6 @@ class SubscribersController extends Controller
 
         } else {
 
-            if ($request->get('user_id') != null) {
-                $subscribers->update([
-                    'user_id' => $request->get('user_id')
-                ]);
-            }
 
             if ($request->get('email') != null) {
                 $subscribers->update([
