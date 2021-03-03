@@ -29,8 +29,6 @@ class MailController extends Controller
 
         } else {
 
-            
-
             foreach ($mail as $perItem) {
                 
                 $subscriber = Subscribers::find($perItem->to_id);
@@ -86,13 +84,15 @@ class MailController extends Controller
 
         if (empty($mail)) {
 
-            return null;
+            return response()->json(['status' => 'mail can not be found']);
 
         } else {
 
             $campaign = Campaign::find($mail->campaign_id);
 
             $campaign->delete();
+
+            return response()->json(['status' => 'mail has been deleted']);
 
         }
 

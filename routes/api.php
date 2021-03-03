@@ -31,6 +31,7 @@ Route::group(['prefix' => 'campaign',  'middleware' => ['jwt.verify']], function
 //Group Controller
 Route::group(['prefix' => 'group', 'middleware' => ['jwt.verify']], function() {
     Route::get('/read', [GroupController::class, 'index']);
+    Route::get('/read/{id}', [GroupController::class, 'show']);
     Route::post('/create', [GroupController::class, 'store']);
     Route::post('/update/{id}', [GroupController::class, 'update']);
     Route::delete('/delete/{id}', [GroupController::class, 'destroy']);
@@ -47,6 +48,7 @@ Route::group(['prefix' => 'group-subscribers', 'middleware' => ['jwt.verify']], 
 //Subscribers Controller
 Route::group(['prefix' => 'subscribers', 'middleware' => ['jwt.verify']], function() {
     Route::get('/read', [SubscribersController::class, 'index']);
+    Route::get('/read/{id}', [SubscribersController::class, 'show']);
     Route::post('/create', [SubscribersController::class, 'store']);
     Route::post('/update/{id}', [SubscribersController::class, 'update']);
     Route::delete('/delete/{id}', [SubscribersController::class, 'destroy']);
