@@ -31,10 +31,15 @@ class SubscribersController extends Controller
             'email' => 'required|string|email|max:255|unique:subscribers'
         ]);
 
-        $subscribers = Subscribers::create([
-            'user_id' => $user->id,
-            'email' => $request->get('email')
-        ]);
+        try{
+            $subscribers = Subscribers::create([
+                'user_id' => $user->id,
+                'email' => $request->get('email')
+            ]);
+        }
+        catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+        }
         
         return response()->json(compact('subscribers'));
     }

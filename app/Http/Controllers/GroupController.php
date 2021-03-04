@@ -43,10 +43,16 @@ class GroupController extends Controller
             'name' => 'required|string|max:255|unique:group'
         ]);
 
-        $group = Group::create([
-            'user_id' => $user->id,
-            'name' => $request->get('name')
-        ]);
+        try {
+
+            $group = Group::create([
+                'user_id' => $user->id,
+                'name' => $request->get('name')
+            ]);
+        }
+        catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+        }
         
         return response()->json(compact('group'));
     }
