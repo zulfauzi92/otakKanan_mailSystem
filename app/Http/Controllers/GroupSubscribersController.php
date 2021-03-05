@@ -31,11 +31,16 @@ class GroupSubscribersController extends Controller
             'subscribe_id' => 'required'
         ]);
 
-        $groupSubscribers = GroupSubscribers::create([
-            'user_id' => $user->id,
-            'group_id' => $request->get('group_id'),
-            'subscribe_id' => $request->get('subscribe_id')
-        ]);
+        try{
+            $groupSubscribers = GroupSubscribers::create([
+                'user_id' => $user->id,
+                'group_id' => $request->get('group_id'),
+                'subscribe_id' => $request->get('subscribe_id')
+            ]);
+        }
+        catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+        }
         
         return response()->json(compact('groupSubscribers'));
     }

@@ -35,6 +35,7 @@ class MailController extends Controller
                 $campaign = Campaign::find($perItem->campaign_id);
 
                 $email['mail_id'] = $perItem->id;
+                $email['campaign_name'] = $campaign->name;
                 $email['to'] = $subscriber->email;
                 $email['subject'] = $campaign->subject;
                 $email['message'] = $campaign->message;
@@ -66,7 +67,8 @@ class MailController extends Controller
             $campaign = Campaign::find($mail->campaign_id);
             $subscriber = Subscribers::find($mail->to_id);
 
-            $detail['name'] = $user->name;
+            $detail['campaign_name'] = $campaign->name;
+            $detail['user_name'] = $user->name;
             $detail['email'] = $user->email;
             $detail['to'] = $subscriber->email;
             $detail['subject'] = $campaign->campaign;

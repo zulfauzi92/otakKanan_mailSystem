@@ -34,7 +34,7 @@ class CampaignController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
 
         $this->validate($request,[
-           // 'name' => 'required',
+            'name' => 'required',
             'subject' => 'required',
             'message' => 'required',
             'receiver' => 'required|string|email|max:255'
@@ -57,18 +57,31 @@ class CampaignController extends Controller
 
         }
 
-        $campaign = Campaign::create([
-            //'name' => $request->get('name'),
-            'subject' => $request->get('subject'),
-            'message' => $request->get('message'),
-            'user_id' => $user->id
-        ]);
+        try{
 
-        $mail = Mail::create([
-            'from_id' => $user->id,
-            'to_id' => $receiver->id,
-            'campaign_id' => $campaign->id
-        ]);
+            $campaign = Campaign::create([
+                'name' => $request->get('name'),
+                'subject' => $request->get('subject'),
+                'message' => $request->get('message'),
+                'user_id' => $user->id
+            ]);
+
+        }
+        catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+        }
+
+        try{
+
+            $mail = Mail::create([
+                'from_id' => $user->id,
+                'to_id' => $receiver->id,
+                'campaign_id' => $campaign->id
+            ]);
+        }
+        catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+        }
 
         $details = [
             'subject' => $request->get('subject'),
@@ -111,7 +124,7 @@ class CampaignController extends Controller
     {
         $campaign = Campaign::find($id);
 
-        if ($request->get('subject') != null) {
+        if ($request->get('name') != null) {
             $campaign->update([
                 'name' => $request->get('name')
             ]);

@@ -73,12 +73,17 @@ class UserController extends Controller
             return response()->json(['status' => $validator->errors()->toJson()], 400);
         }
 
-        $user = User::create([
-            'name' => $request->get('name'),
-            'email' => $request->get('email'),
-            'password' => Hash::make($request->get('password')),
-            'role'=> 'user'
-        ]);
+        try{
+            $user = User::create([
+                'name' => $request->get('name'),
+                'email' => $request->get('email'),
+                'password' => Hash::make($request->get('password')),
+                'role'=> 'user'
+            ]);
+        }
+        catch(\Exception $e){
+            return response()->json(['status'=>$e->getMessage()]);
+        }
 
         $token = JWTAuth::fromUser($user);
         $status = "register is success";
