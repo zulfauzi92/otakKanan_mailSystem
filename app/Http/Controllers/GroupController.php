@@ -74,8 +74,6 @@ class GroupController extends Controller
 
         } else {
 
-            
-
             $groupSubscribers = DB::table('group_subscribers')
             ->where('group_id', 'like', $group->id)
             ->get();
