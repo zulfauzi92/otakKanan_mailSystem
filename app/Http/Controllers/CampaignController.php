@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Campaign;
 use App\Models\Mail;
 use App\Models\Subscribers;
+use App\Models\GroupSubscribers;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\File;
@@ -102,7 +103,7 @@ class CampaignController extends Controller
             if($batch > 1000){
                 continue;
               
-                return response()->json([ 'message' => "Max 1000 emails/campaign :)"]); 
+                return response()->json([ 'status' => "Max 1000 emails/campaign :)"]); 
             } 
 
             $details = [
