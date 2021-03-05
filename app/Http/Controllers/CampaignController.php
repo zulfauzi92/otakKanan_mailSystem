@@ -27,9 +27,46 @@ class CampaignController extends Controller
         return response()->json(compact('campaigns'));
     }
 
-    
-   
     public function store(Request $request)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $receivers_email = $request->input('subscribers.*');
+       // dd($request->all());
+
+        $batch = 0;
+
+        foreach($receivers_email as $receiver_email) {        
+            $batch++;
+
+            if($batch > 1000){
+                continue;
+              
+                return response()->json([ 'message' => "Max 1000 emails/campaign :)"]); 
+            } 
+
+            $name[] = $receiver_email['name'];
+            $email[] = $receiver_email['email'];
+
+            $details = [
+                'subject' => $request->get('subject'),
+                'body' => $request->get('message'),
+                'from' => $user->email,
+                'name' => $user->name
+            ];
+    
+            try{
+                \Mail::to($receiver_email['email'])->send(new \App\Mail\BasicMail($details));
+            }
+            catch(\Exception $e){
+                return response()->json(['status'=>$e->getMessage()]);
+            }     
+            
+        }
+        $batch = 0;
+        dd("Emails Sent");
+    }
+   
+    public function stores(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
 
