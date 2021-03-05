@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Campaign;
 use App\Models\Mail;
 use App\Models\Subscribers;
+use App\Models\GroupSubscribers;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\File;
@@ -27,77 +28,63 @@ class CampaignController extends Controller
         return response()->json(compact('campaigns'));
     }
 
-    public function store(Request $request)
+    public function storeChecklist(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $receivers_email = $request->input('subscribers.*');
-       // dd($request->all());
-
-        $batch = 0;
-
-        foreach($receivers_email as $receiver_email) {        
-            $batch++;
-
-            if($batch > 1000){
-                continue;
-              
-                return response()->json([ 'message' => "Max 1000 emails/campaign :)"]); 
-            } 
-
-            $name[] = $receiver_email['name'];
-            $email[] = $receiver_email['email'];
-
-            $details = [
-                'subject' => $request->get('subject'),
-                'body' => $request->get('message'),
-                'from' => $user->email,
-                'name' => $user->name
-            ];
-    
-            try{
-                \Mail::to($receiver_email['email'])->send(new \App\Mail\BasicMail($details));
-            }
-            catch(\Exception $e){
-                return response()->json(['status'=>$e->getMessage()]);
-            }     
-            
-        }
-        $batch = 0;
-        dd("Emails Sent");
-    }
-   
-    public function stores(Request $request)
-    {
-        $user = JWTAuth::parseToken()->authenticate();
+        $subscribers = array();
 
         $this->validate($request,[
-            'name' => 'required',
+            'name_campaign' => 'required',
             'subject' => 'required',
             'message' => 'required',
-            'receiver' => 'required|string|email|max:255'
+            'subscribers.*' => 'required',
+            'checkType' => 'required'
         ]);
 
-        $subscriber = DB::table('subscribers')
-        ->where('email', 'like', $request->receiver)
-        ->first();
+        if ($request->get('checkType') == 'group'){
 
-        if (empty($subscriber)) {
+            $receivers = $request->input('subscribers.*');
 
-            $receiver = Subscribers::create([
-                'user_id' => $user->id,
-                'email' => $request->receiver
-            ]);
+            foreach ($receivers as $id) {
+                
+                $group = DB::table('group_subscribers')
+                ->where('group_id', '=', $id)
+                ->get();
 
-        } else { 
+                foreach ($group as $item) {
+                    $temp = Subscribers::find($item->subscribe_id);
+                    array_push($subscribers, $temp);
+                }
 
-            $receiver = $subscriber;
+            }
+
+        } else if ($request->get('checkType') == 'subscribers'){
+
+            $receivers = $request->input('subscribers.*');
+
+            foreach ($receivers as $id) {
+
+                $subscriber = DB::table('subscribers')
+                ->where('id', '=', $id)
+                ->where('user_id', '=', $user->id)
+                ->first();
+
+                $temp = $subscriber;
+
+                array_push($subscribers, $temp);
+
+            }
+
+        } else {
+
+            return response()->json(['status'=>'LOL']);
 
         }
 
         try{
 
             $campaign = Campaign::create([
-                'name' => $request->get('name'),
+                'name' => $request->get('name_campaign'),
                 'subject' => $request->get('subject'),
                 'message' => $request->get('message'),
                 'user_id' => $user->id
@@ -108,37 +95,124 @@ class CampaignController extends Controller
             return response()->json(['status'=>$e->getMessage()]);
         }
 
-        try{
+        $batch = 0;
 
-            $mail = Mail::create([
-                'from_id' => $user->id,
-                'to_id' => $receiver->id,
-                'campaign_id' => $campaign->id
-            ]);
+        foreach($subscribers as $item) {        
+            $batch++;
+
+            if($batch > 1000){
+                continue;
+              
+                return response()->json([ 'status' => "Max 1000 emails/campaign :)"]); 
+            } 
+
+            $details = [
+                'name_campaign' => $campaign->name,
+                'subject' => $campaign->subject,
+                'body' => $campaign->message,
+                'from' => $user->email,
+                'name' => $user->name
+            ];
+    
+            try{
+                \Mail::to($item->email)->send(new \App\Mail\BasicMail($details));
+            }
+            catch(\Exception $e){
+                return response()->json(['status'=>$e->getMessage()]);
+            }
+
+            try{
+
+                $mail = Mail::create([
+                    'from_id' => $user->id,
+                    'to_id' => $item->id,
+                    'campaign_id' => $campaign->id
+                ]);
+            }
+            catch(\Exception $e){
+                return response()->json(['status'=>$e->getMessage()]);
+            }     
+            
         }
-        catch(\Exception $e){
-            return response()->json(['status'=>$e->getMessage()]);
-        }
 
-        $details = [
-            'subject' => $request->get('subject'),
-            'body' => $request->get('message'),
-            'from' => $user->email,
-            'name' => $user->name
+        $batch = 0;
+        dd("Emails Sent");
 
-        ];
+    }
+   
+    // public function storeCompose(Request $request)
+    // {
+    //     $user = JWTAuth::parseToken()->authenticate();
 
-        try{
-            \Mail::to($request->get('receiver'))->send(new \App\Mail\BasicMail($details));
-         }
-         catch(\Exception $e){
-            return response()->json(['status'=>$e->getMessage()]);
-         }
+    //     $this->validate($request,[
+    //         'name' => 'required',
+    //         'subject' => 'required',
+    //         'message' => 'required',
+    //         'receiver' => 'required|string|email|max:255'
+    //     ]);
+
+    //     $subscriber = DB::table('subscribers')
+    //     ->where('email', 'like', $request->receiver)
+    //     ->first();
+
+    //     if (empty($subscriber)) {
+
+    //         $receiver = Subscribers::create([
+    //             'user_id' => $user->id,
+    //             'email' => $request->receiver
+    //         ]);
+
+    //     } else { 
+
+    //         $receiver = $subscriber;
+
+    //     }
+
+    //     try{
+
+    //         $campaign = Campaign::create([
+    //             'name' => $request->get('name'),
+    //             'subject' => $request->get('subject'),
+    //             'message' => $request->get('message'),
+    //             'user_id' => $user->id
+    //         ]);
+
+    //     }
+    //     catch(\Exception $e){
+    //         return response()->json(['status'=>$e->getMessage()]);
+    //     }
+
+    //     try{
+
+    //         $mail = Mail::create([
+    //             'from_id' => $user->id,
+    //             'to_id' => $receiver->id,
+    //             'campaign_id' => $campaign->id
+    //         ]);
+    //     }
+    //     catch(\Exception $e){
+    //         return response()->json(['status'=>$e->getMessage()]);
+    //     }
+
+    //     $details = [
+    //         'subject' => $request->get('subject'),
+    //         'body' => $request->get('message'),
+    //         'from' => $user->email,
+    //         'name' => $user->name
+
+    //     ];
+
+    //     try{
+    //         \Mail::to($request->get('receiver'))->send(new \App\Mail\BasicMail($details));
+    //      }
+    //      catch(\Exception $e){
+    //         return response()->json(['status'=>$e->getMessage()]);
+    //      }
 
         
                
-        return response()->json(compact(['campaign', 'receiver', 'mail']));
-    }
+    //     return response()->json(compact(['campaign', 'receiver', 'mail']));
+    // }
     
     public function show($id)
     {
