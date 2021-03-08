@@ -19,10 +19,11 @@ Route::group(['prefix' => 'user', 'middleware' => ['jwt.verify']], function(){
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
 
+//Campaign Controller
 Route::group(['prefix' => 'campaign',  'middleware' => ['jwt.verify']], function() {
     Route::get('/show', [CampaignController::class, 'index']);
     Route::get('/show/{id}', [CampaignController::class, 'show']);
-    Route::post('/create', [CampaignController::class, 'store']);
+    Route::post('/create', [CampaignController::class, 'storeChecklist']);
     Route::put('/update/{id}', [CampaignController::class, 'update']);
     Route::delete('/delete/{id}', [CampaignController::class, 'destroy']);
 });
