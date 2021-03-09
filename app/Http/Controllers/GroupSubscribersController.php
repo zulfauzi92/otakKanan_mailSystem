@@ -25,24 +25,31 @@ class GroupSubscribersController extends Controller
     public function store(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
+        $temp2['groupSubsribers'] = array();
 
         $this->validate($request,[
             'group_id' => 'required',
-            'subscribe_id' => 'required'
+            'subscribe_id.*' => 'required',
         ]);
-
-        try{
-            $groupSubscribers = GroupSubscribers::create([
-                'user_id' => $user->id,
-                'group_id' => $request->get('group_id'),
-                'subscribe_id' => $request->get('subscribe_id')
-            ]);
-        }
-        catch(\Exception $e){
-            return response()->json(['status'=>$e->getMessage()]);
-        }
         
-        return response()->json(compact('groupSubscribers'));
+        $receivers = $request->input('subscribe_id.*');
+        
+        foreach ($receivers as $key => $value) {
+            try{
+                $temp = GroupSubscribers::create([
+                    'user_id' => $user->id,
+                    'group_id' => $request->get('group_id'),
+                    'subscribe_id' => $value
+                ]);
+            }
+            catch(\Exception $e){
+                return response()->json(['status'=>$e->getMessage()]);
+            }
+
+            array_push($temp2['groupSubsribers'], $temp);
+        }
+            
+        return response()->json($temp2);
     }
 
    

@@ -11,6 +11,7 @@ class Campaign extends Model
 
     protected $table = 'campaign';
     protected $fillable = [
+        'name',
         'subject',
         'message',
         'user_id'

@@ -6,14 +6,16 @@ use App\Models\Campaign;
 use App\Models\Mail;
 use App\Models\Subscribers;
 use App\Models\GroupSubscribers;
+use App\Models\Group;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use JWTAuth;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use JWTAuth;
+
 
 class CampaignController extends Controller
 {
@@ -31,15 +33,19 @@ class CampaignController extends Controller
     public function storeChecklist(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $subscribers = array();
+        $subscribers_temp['subscribers'] = array();
 
-        $this->validate($request,[
-            'name_campaign' => 'required',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
             'subject' => 'required',
             'message' => 'required',
             'subscribers.*' => 'required',
             'checkType' => 'required'
         ]);
+
+        if($validator->fails()){
+            return response()->json(['status' => $validator->errors()->toJson()], 400);
+        }
 
         if ($request->get('checkType') == 'group'){
 
@@ -53,10 +59,13 @@ class CampaignController extends Controller
 
                 foreach ($group as $item) {
                     $temp = Subscribers::find($item->subscribe_id);
-                    array_push($subscribers, $temp);
+                    array_push($subscribers_temp['subscribers'], $temp);
+                    $groups_temp = Group::find($item->group_id);
                 }
 
             }
+
+            $subscribers_temp['group_name'] = $groups_temp->name;
 
         } else if ($request->get('checkType') == 'subscribers'){
 
@@ -71,7 +80,7 @@ class CampaignController extends Controller
 
                 $temp = $subscriber;
 
-                array_push($subscribers, $temp);
+                array_push($subscribers_temp['subscribers'], $temp);
 
             }
 
@@ -84,11 +93,13 @@ class CampaignController extends Controller
         try{
 
             $campaign = Campaign::create([
-                'name' => $request->get('name_campaign'),
+                'name' => $request->get('name'),
                 'subject' => $request->get('subject'),
                 'message' => $request->get('message'),
                 'user_id' => $user->id
             ]);
+
+            $mail_temp['campaign_name'] = $campaign->name;
 
         }
         catch(\Exception $e){
@@ -96,8 +107,11 @@ class CampaignController extends Controller
         }
 
         $batch = 0;
+        $subscribers_temp['mail'] = array();
+        $mail_temp['from'] = $user->email;
+        $mail_temp['to'] = array();
 
-        foreach($subscribers as $item) {        
+        foreach($subscribers_temp['subscribers'] as $item) {        
             $batch++;
 
             if($batch > 1000){
@@ -133,11 +147,15 @@ class CampaignController extends Controller
                 return response()->json(['status'=>$e->getMessage()]);
             }     
             
+            array_push($mail_temp['to'], $item->email);
+
         }
-
+    
         $batch = 0;
-        dd("Emails Sent");
+        $subscribers_temp['campaign'] = $campaign;
+        $subscribers_temp['mail'] = $mail_temp;
 
+        return response()->json($subscribers_temp);
     }
    
     // public function storeCompose(Request $request)
@@ -267,7 +285,9 @@ class CampaignController extends Controller
     {
         $campaign = Campaign::find($id);
 
-        if ($campaign->delete()) {
+        if (!empty($campaign)) {
+            $campaign->delete();
+
             return response()->json([ 'message' => "Data Successfully Deleted"]);
         }    
     }
